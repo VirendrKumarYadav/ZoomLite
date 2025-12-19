@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<body style="padding: 20px; font-family: Arial;">
+    <h2>Control Test</h2>
+    <button onclick="testAudio()">Test Audio Toggle</button>
+    <button onclick="testVideo()">Test Video Toggle</button>
+    <button onclick="testChat()">Test Chat</button>
+    <div id="output" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg) {
+            output.innerHTML += `<div>${msg}</div>`;
+            console.log(msg);
+        }
+        
+        function testAudio() {
+            log('Testing audio...');
+            // Simulate button click
+            const btn = document.getElementById('muteBtn');
+            if (btn) {
+                btn.click();
+                log('✓ Audio button clicked');
+            } else {
+                log('✗ Audio button not found');
+            }
+        }
+        
+        function testVideo() {
+            log('Testing video...');
+            const btn = document.getElementById('videoBtn');
+            if (btn) {
+                btn.click();
+                log('✓ Video button clicked');
+            } else {
+                log('✗ Video button not found');
+            }
+        }
+        
+        function testChat() {
+            log('Testing chat...');
+            const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendMessageBtn');
+            
+            if (input && btn) {
+                input.value = 'Test message at ' + new Date().toLocaleTimeString();
+                btn.click();
+                log('✓ Chat test sent');
+            } else {
+                log('✗ Chat elements not found');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Conference Room</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="room-container">
+        <!-- Header -->
+        <div class="room-header">
+            <div class="room-info">
+                <h2><i class="fas fa-video"></i> Meeting: <span id="roomIdDisplay">Loading...</span></h2>
+                <p id="participantCount">1 participant</p>
+            </div>
+            <div class="room-controls">
+                <button id="copyRoomId" class="btn-control" title="Copy Meeting ID">
+                    <i class="fas fa-copy"></i> Copy ID
+                </button>
+                <button id="leaveRoom" class="btn-danger">
+                    <i class="fas fa-phone-slash"></i> Leave
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="room-main">
+            <!-- Video Grid -->
+            <div class="video-section">
+                <div id="videoGrid" class="video-grid">
+                    <!-- Videos will be inserted here -->
+                </div>
+
+                <!-- Controls -->
+                <div class="media-controls">
+                    <div class="control-group">
+                        <button id="muteBtn" class="btn-control active">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <span>Mute</span>
+                    </div>
+                    <div class="control-group">
+                        <button id="videoBtn" class="btn-control active">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <span>Video</span>
+                    </div>
+                    <div class="control-group">
+                        <button id="screenShareBtn" class="btn-control">
+                            <i class="fas fa-desktop"></i>
+                        </button>
+                        <span>Share</span>
+                    </div>
+                    <div class="control-group">
+                        <button id="chatToggleBtn" class="btn-control">
+                            <i class="fas fa-comments"></i>
+                        </button>
+                        <span>Chat</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="room-sidebar">
+                <!-- Participants -->
+                <div class="sidebar-section" id="participantsSection">
+                    <h3><i class="fas fa-users"></i> Participants (<span id="participantsCount">1</span>)</h3>
+                    <div id="participantsList" class="participants-list">
+                        <!-- Participants will be added here -->
+                    </div>
+                </div>
+
+                <!-- Chat -->
+                <div class="sidebar-section" id="chatSection" style="display: none;">
+                    <div class="chat-header">
+                        <h3><i class="fas fa-comments"></i> Chat</h3>
+                        <button id="closeChatBtn" class="btn-icon">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="chatMessages" class="chat-messages">
+                        <!-- Messages will be added here -->
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type a message...">
+                        <button id="sendMessageBtn" class="btn-icon">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/room.js"></script>
+</body>
+</html>
