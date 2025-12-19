@@ -553,22 +553,21 @@ class VideoConference {
         // Handle current participants and call each one
         this.socket.on('current-participants', (participants) => {
             participants.forEach(({ userId, userName }) => {
+                // Call each existing participant
                 const call = this.peer.call(userId, this.localStream);
                 call.on('stream', (remoteStream) => {
                     this.addVideoStream(userId, remoteStream);
+                });
+                call.on('close', () => {
+                    this.removeVideoStream(userId);
                 });
                 this.peers[userId] = call;
                 this.addParticipant(userId, userName);
             });
         });
 
-        // When a new user connects, call them
+        // When a new user connects, only update the participant list (do not call them)
         this.socket.on('user-connected', ({ userId, userName }) => {
-            const call = this.peer.call(userId, this.localStream);
-            call.on('stream', (remoteStream) => {
-                this.addVideoStream(userId, remoteStream);
-            });
-            this.peers[userId] = call;
             this.addParticipant(userId, userName);
         });
 
@@ -579,6 +578,7 @@ class VideoConference {
                 delete this.peers[userId];
             }
             this.removeParticipant(userId);
+            this.removeVideoStream(userId);
         });
 
         // Receive chat message
@@ -592,7 +592,6 @@ class VideoConference {
             if (audioStatus) {
                 audioStatus.textContent = isMuted ? '🔇' : '🔊';
             }
-            // Optionally update video overlay icon as well
         });
 
         // Listen for video toggles
@@ -601,12 +600,36 @@ class VideoConference {
             if (videoStatus) {
                 videoStatus.textContent = isVideoOff ? '📷❌' : '📹';
             }
-            // Optionally hide/show video element
             const videoElem = document.getElementById(`stream-${userId}`);
             if (videoElem) {
                 videoElem.style.display = isVideoOff ? 'none' : 'block';
             }
         });
+
+        // Listen for screen sharing events
+        this.socket.on('user-screen-sharing', ({ userId, isSharing }) => {
+            if (!isSharing) {
+                // Remove the screen share video element
+                const screenElem = document.getElementById(`screen-${userId}`);
+                if (screenElem) screenElem.remove();
+            }
+            // If isSharing is true, the PeerJS call will deliver the stream and addVideoStream will handle it
+        });
+
+        // Listen for incoming PeerJS calls (camera or screen)
+        if (this.peer) {
+            this.peer.on('call', (call) => {
+                call.answer(this.localStream);
+                call.on('stream', (remoteStream) => {
+                    const isScreen = call.metadata && call.metadata.screen;
+                    this.addVideoStream(call.peer, remoteStream, isScreen);
+                });
+                call.on('close', () => {
+                    this.removeVideoStream(call.peer);
+                });
+                this.peers[call.peer] = call;
+            });
+        }
     }
 
     addParticipant(userId, userName) {
@@ -654,6 +677,47 @@ class VideoConference {
         }
         
         console.log('👥 Participant count updated to:', count);
+    }
+
+    addVideoStream(userId, stream, isScreen = false) {
+        const videoGrid = document.getElementById('videoGrid');
+        const existing = document.getElementById(isScreen ? `screen-${userId}` : `video-${userId}`);
+        if (existing) return;
+
+        const videoWrapper = document.createElement('div');
+        videoWrapper.className = isScreen ? 'screen-share-wrapper' : 'video-wrapper';
+        videoWrapper.id = isScreen ? `screen-${userId}` : `video-${userId}`;
+
+        const video = document.createElement('video');
+        video.id = isScreen ? `screen-stream-${userId}` : `stream-${userId}`;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.srcObject = stream;
+
+        if (isScreen) {
+            videoWrapper.appendChild(video);
+            videoGrid.appendChild(videoWrapper);
+        } else {
+            const overlay = document.createElement('div');
+            overlay.className = 'video-overlay';
+            overlay.innerHTML = `
+                <span id="name-${userId}">Loading...</span>
+                <div class="status-icons">
+                    <span id="audio-${userId}">🔊</span>
+                    <span id="video-${userId}">📹</span>
+                </div>
+            `;
+            videoWrapper.appendChild(video);
+            videoWrapper.appendChild(overlay);
+            videoGrid.appendChild(videoWrapper);
+        }
+    }
+
+    removeVideoStream(userId) {
+        const videoElem = document.getElementById(`video-${userId}`);
+        if (videoElem) videoElem.remove();
+        const screenElem = document.getElementById(`screen-${userId}`);
+        if (screenElem) screenElem.remove();
     }
 }
 
